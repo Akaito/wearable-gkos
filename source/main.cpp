@@ -38,7 +38,7 @@ GkosEntry gkosKeysAbc[] = {
     { L"b", 0 }, // 2
     { L"o", 0 },
     { L"c", 0 }, // 4
-    { L"->", 0 },
+    { L"th", 0 }, // Extra 'th' key
     { L"s", 0 },
     { NULL, VK_BACK },
     { L"t", 0 }, // 8
@@ -46,7 +46,7 @@ GkosEntry gkosKeysAbc[] = {
     { L"'", 0 },
     { L"p", 0 },
     { L"!", 0 },
-    { L"m_", 0 }, // Extra 'th' key combo with key 4
+    { L"that ", 0 }, // Extra 'th' key combo with key 4
     { L"d", 0 },
     { NULL, VK_LEFT },
     { L"e", 0 }, // 16
@@ -54,15 +54,15 @@ GkosEntry gkosKeysAbc[] = {
     { NULL, VK_LSHIFT }, // TODO : Double-hitting shift enters CapsLock (and symbol lock?)
     { L"q", 0 },
     { L",", 0 },
-    { L";", 0 }, // Extra 'th' key combo with key 5
+    { L"the ", 0 }, // Extra 'th' key combo with key 5
     { L"u", 0 },
-    { NULL, 0 }, // <  ?
+    { NULL, 0 }, // <  ?  (Word Left)
     { L"i", 0 },
     { L"h", 0 },
     { L"g", 0 },
     { NULL, VK_PRIOR }, // PageUp
     { L"j", 0 },
-    { L"|", 0 },
+    { L"to ", 0 },
     { L"/", 0 },
     { NULL, VK_ESCAPE },
     { L"r", 0 }, // 32
@@ -70,11 +70,12 @@ GkosEntry gkosKeysAbc[] = {
     { L".", 0 },
     { L"f", 0 },
     { NULL, VK_DOWN },
-    { L"localhost", 0 }, // Extra 'th' key combo with key 6
+    { L"of ", 0 }, // Extra 'th' key combo with key 6
     { L"v", 0 },
     { NULL, VK_HOME },
     { L"w", 0 },
     { L"x", 0 },
+    { L"y", 0 },
     { NULL, VK_INSERT },
     { L"z", 0 },
     { NULL, 0 }, // TODO : SYMB (when shifted?).  Android keyboard does SYMB anyway -- maybe one instead of lock?
@@ -85,35 +86,83 @@ GkosEntry gkosKeysAbc[] = {
     { L"m", 0 },
     { L"\\", 0 },
     { L"k", 0 },
-    { L") {\n}", 0 }, // Extra 'th' key combo with keys 5 and 6
+    { L"and ", 0 }, // Extra 'th' key combo with keys 5 and 6
     { NULL, VK_NEXT }, // PageDown
     { NULL, VK_LMENU }, // Alt
     { NULL, VK_SPACE },
     { NULL, VK_RIGHT },
-    { NULL, 0 }, // >  ?
+    { NULL, 0 }, // >  ?  (Word Right)
     { NULL, VK_RETURN },
     { NULL, VK_END },
     { NULL, VK_TAB },
     { NULL, VK_DELETE },
     { NULL, 0 }, // TODO : ABC-123 toggle
 };
-GkosEntry gkosKeys123[] = {
-    { NULL, 0 }, // Meaningless no-key placeholder
-    { L"1", 0 },
-    { L"2", 0 },
-    { L"3", 0 },
-    { L"4", 0 },
-    { L"5", 0 },
-    { L"6", 0 },
-};
 GkosEntry gkosKeysSymb[] = {
     { NULL, 0 }, // Meaningless no-key placeholder
-    { L"1", 0 },
-    { L"2", 0 },
-    { L"3", 0 },
-    { L"4", 0 },
-    { L"5", 0 },
-    { L"6", 0 },
+    { L"1", 0 }, // 1
+    { L"2", 0 }, // 2
+    { L"+", 0 },
+    { L"3", 0 }, // 4
+    { L")", 0 },
+    { L"*", 0 },
+    { NULL, 0 },
+    { L"4", 0 }, // 8
+    { NULL, 0 },
+    { L"\"", 0 },
+    { L"%", 0 },
+    { L"|", 0 },
+    { L"]", 0 },
+    { L"$", 0 },
+    { NULL, 0 },
+    { L"5", 0 }, // 16
+    { L"_", 0 },
+    { NULL, 0 }, // TODO : Double-hitting shift enters CapsLock (and symbol lock?)
+    { L"=", 0 },
+    { L";", 0 },
+    { L">", 0 },
+    { NULL, 0 }, // Euros
+    { NULL, 0 }, // <  ?
+    { L"0", 0 },
+    { L"7", 0 },
+    { L"8", 0 },
+    { NULL, 0 }, // PageUp
+    { L"9", 0 },
+    { NULL, 0 }, // Funky 'ins' symbol? 011101b
+    { L"´", 0 },
+    { NULL, 0 },
+    { L"6", 0 }, // 32
+    { L"~", 0 },
+    { L":", 0 },
+    { L"^", 0 },
+    { NULL, 0 }, // Down arrow
+    { L"}", 0 },
+    { NULL, 0 }, // (British pounds currency symbol)
+    { NULL, 0 },
+    { L"(", 0 },
+    { L"[", 0 },
+    { L"<", 0 },
+    { NULL, 0 }, // Insert
+    { L"{", 0 },
+    { NULL, 0 }, // TODO : SYMB (when shifted?).  Android keyboard does SYMB anyway -- maybe one instead of lock?
+    { NULL, 0 }, // Section symbol
+    { NULL, 0 }, // Control
+    { L"#", 0 },
+    { L"@", 0 },
+    { NULL, 0 }, // 1/2 symbol
+    { L"`", 0 }, // Backtick
+    { L"&", 0 },
+    { NULL, 0 }, // Extra 'th' key combo with keys 5 and 6 (elipses/and/_ould)
+    { NULL, 0 }, // PageDown
+    { NULL, 0 }, // Alt
+    { NULL, 0 }, // Space
+    { NULL, 0 }, // Right arrow
+    { NULL, 0 }, // >  ?  (Next Word)
+    { NULL, 0 }, // Enter
+    { NULL, 0 }, // End
+    { NULL, 0 }, // Tab
+    { NULL, 0 }, // Delete
+    { NULL, 0 }, // TODO : ABC-123 toggle
 };
 
 //=============================================================================
@@ -230,13 +279,13 @@ void ReadDs4RawInput (
     unsigned gkosChord = 0x0;
     if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 0)) // L1
         gkosChord |= GKOS_KEY_FLAG_1;
-    if (povValue >= 1 && povValue <= 3) // POV East
+    if ((povValue >= 1 && povValue <= 3) || rawDataArray[DS4_BYTE_L2_ANALOG] >= 0x1F) // POV East OR L2
         gkosChord |= (1 << 1);
     if (povValue >= 3 && povValue <= 5) // POV South
         gkosChord |= (1 << 2);
     if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 1)) // R1
         gkosChord |= (1 << 3);
-    if (rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 4)) // Square
+    if ((rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 4)) || rawDataArray[DS4_BYTE_R2_ANALOG] >= 0x1F) // Square OR R2
         gkosChord |= (1 << 4);
     if (rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 5)) // X
         gkosChord |= (1 << 5);
