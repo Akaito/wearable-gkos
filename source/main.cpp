@@ -298,6 +298,34 @@ void ReadDs4RawInput (
         else
             swprintf_s(buf, L"Chord 0x%02X yields Virtual Key %X\n", gkosChord, gkosKey.vkey);
         OutputDebugString(buf);
+        
+        INPUT ins[32];
+        UINT  insCount = 0;
+        memset(ins, 0, sizeof(ins));
+        for (unsigned i = 0; i < 32; ++i)
+            ins[i].type = INPUT_KEYBOARD; // Can also use _MOUSE or _HARDWARE
+
+        if (gkosKey.vkey) {
+            ins[0].ki.wVk = gkosKey.vkey;
+        }
+        else {
+            unsigned char val = (unsigned char)(gkosKey.str[0]);
+            
+            if (val >= '0' && val <= '9')
+                val = (val - '0') + 0x30;
+            else if (val >= 'a' && val <= 'z')
+                val = (val - 'a') + 0x41;
+            else if (val == ';')
+                val = VK_OEM_1;
+            else
+                return;
+                
+            ins[0].ki.wVk = val;
+        }
+
+        SendInput(1, ins, sizeof(ins[0]));
+        ins[0].ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, ins, sizeof(ins[0]));
     }
 
 }
