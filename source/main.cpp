@@ -9,10 +9,6 @@ static const unsigned MS_PER_SECOND = 1000;
 struct Ds4Frame {
     BYTE rawData[64];
 };
-static const unsigned s_frameDelay = 4;
-static const unsigned s_frameHoldTime = MS_PER_SECOND * 3;
-static Ds4Frame       s_frameBuffer[s_frameHoldTime / s_frameDelay];
-static unsigned       s_frameIndex = 0;
 
 enum EGkosKeyFlags {
     GKOS_KEY_FLAG_1 = 1 << 0,
@@ -32,6 +28,14 @@ struct GkosEntry {
     const TCHAR *  str;
     unsigned short vkey;
 };
+
+static const unsigned s_frameDelay            = 4;
+static const unsigned s_frameHoldTime         = MS_PER_SECOND * 3;
+static const unsigned s_inputBufferCount      = s_frameHoldTime / s_frameDelay;
+static unsigned       s_inputBufferIndex      = 0;
+static Ds4Frame       s_ds4InputBuffer[s_inputBufferCount];
+static GkosEntry      s_chordInputBuffer[s_inputBufferCount];
+
 GkosEntry gkosKeysAbc[] = {
     { NULL, 0 }, // Meaningless no-key placeholder
     { L"a", 0 }, // 1
@@ -418,7 +422,7 @@ int WINAPI wWinMain (
     int       command_show
 ) {
 
-    memset(s_frameBuffer, 0, sizeof(s_frameBuffer));
+    memset(s_ds4InputBuffer, 0, sizeof(s_ds4InputBuffer));
 
     WNDCLASSEX windowClass = {0};
     windowClass.cbSize = sizeof(windowClass);
