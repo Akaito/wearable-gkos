@@ -308,20 +308,16 @@ void ReadDs4RawInput (
         if (gkosKey.vkey) {
             ins[0].ki.wVk = gkosKey.vkey;
         }
-        else {
-            unsigned char val = (unsigned char)(gkosKey.str[0]);
-            
-            if (val >= '0' && val <= '9')
-                val = (val - '0') + 0x30;
-            else if (val >= 'a' && val <= 'z')
-                val = (val - 'a') + 0x41;
-            else if (val == ';')
-                val = VK_OEM_1;
-            else
+        else if (gkosKey.str) {
+            // Note: This doesn't handle numpad keys
+            SHORT vkey = VkKeyScanEx(gkosKey.str[0], NULL);
+            if (vkey == -1)
                 return;
                 
-            ins[0].ki.wVk = val;
+            ins[0].ki.wVk = vkey;
         }
+        else
+            return;
 
         SendInput(1, ins, sizeof(ins[0]));
         ins[0].ki.dwFlags = KEYEVENTF_KEYUP;
