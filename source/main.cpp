@@ -324,7 +324,7 @@ LRESULT CALLBACK WndProc (
             static RAWINPUTDEVICE rid[1];
             rid[0].usUsagePage = 0x01; 
             rid[0].usUsage     = 0x05; // Game pads (not joysticks) 
-            rid[0].dwFlags     = 0;
+            rid[0].dwFlags     = RIDEV_INPUTSINK;
             rid[0].hwndTarget  = hwnd;
 
             if (RegisterRawInputDevices(rid, sizeof(rid)/sizeof(rid[0]), sizeof(rid[0])) == FALSE)
