@@ -108,7 +108,7 @@ struct GkosChordFrame {
 
 // Timing
 static const unsigned s_ds4FrameDelay         = 4; // DS4 frame rate
-static const unsigned s_chordMinFrameCount    = 90 / s_ds4FrameDelay; // ms / ms-per-frame
+static const unsigned s_chordMinFrameCount    = 120 / s_ds4FrameDelay; // ms / ms-per-frame
 
 // Input frames
 static const unsigned s_inputBufferCount      = (MS_PER_SECOND * 3) / s_ds4FrameDelay;
