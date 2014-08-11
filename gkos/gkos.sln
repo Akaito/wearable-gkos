@@ -1,7 +1,12 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gkos", "gkos\gkos.vcproj", "{D5D4C49F-0D7E-4F53-9E89-01F431488436}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gkos", "gkos\gkos.vcxproj", "{D5D4C49F-0D7E-4F53-9E89-01F431488436}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4} = {0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GkosWinHooks", "GkosWinHooks\GkosWinHooks.vcxproj", "{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +18,10 @@ Global
 		{D5D4C49F-0D7E-4F53-9E89-01F431488436}.Debug|Win32.Build.0 = Debug|Win32
 		{D5D4C49F-0D7E-4F53-9E89-01F431488436}.Release|Win32.ActiveCfg = Release|Win32
 		{D5D4C49F-0D7E-4F53-9E89-01F431488436}.Release|Win32.Build.0 = Release|Win32
+		{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}.Debug|Win32.Build.0 = Debug|Win32
+		{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}.Release|Win32.ActiveCfg = Release|Win32
+		{0AC0A80E-B71B-42FC-BEDB-BA43D82016E4}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

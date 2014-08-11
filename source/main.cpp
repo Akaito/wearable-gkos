@@ -1,120 +1,24 @@
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#include <Strsafe.h>
-#include <stdlib.h>
-
-static const unsigned MS_PER_SECOND = 1000;
-
-// http://www.psdevwiki.com/ps4/DS4-USB
-enum EDs4Byte {
-    DS4_BYTE_REPORT_ID = 0,
-    DS4_BYTE_L_STICK_X_AXIS, // 0 = left
-    DS4_BYTE_L_STICK_Y_AXIS, // 0 = up
-    DS4_BYTE_R_STICK_X_AXIS,
-    DS4_BYTE_R_STICK_Y_AXIS,
-    DS4_BYTE_FACE_AND_POV,   // triangle | circle | x | square | 4-bit POV (1000b no pov)
-                             // 0111b NW, 0110b W, 0101b SW, 0100b S, 0011b SE, 0010b E, 0001b NE, 0000b N
-    DS4_BYTE_L_R_MISC_DIGITAL, // R3 | L3 | OPTIONS | SHARE | R2 | L2 | R1 | L1
-    DS4_BYTE_COUNTER_ETC,    // 6-bit counter (1 per report) | T-PAD click | guide button
-    DS4_BYTE_L2_ANALOG,      // 0 = released, 0xFF = fully pressed
-    DS4_BYTE_R2_ANALOG,
-    DS4_BYTE_BYTE_10,
-    DS4_BYTE_BYTE_11,
-    DS4_BYTE_BATTERY_LEVEL,
-    DS4_BYTE_13,
-    DS4_BYTE_14,
-    DS4_BYTE_15,
-    DS4_BYTE_16,
-    DS4_BYTE_17,
-    DS4_BYTE_18,
-    DS4_BYTE_19,
-    DS4_BYTE_20,
-    DS4_BYTE_21,
-    DS4_BYTE_22,
-    DS4_BYTE_23,
-    DS4_BYTE_24,
-    DS4_BYTE_25,
-    DS4_BYTE_26,
-    DS4_BYTE_27,
-    DS4_BYTE_28,
-    DS4_BYTE_29,
-    DS4_BYTE_30,
-    DS4_BYTE_31,
-    DS4_BYTE_32,
-    DS4_BYTE_33, // Some touchpad data starts here
-    DS4_BYTE_34,
-    DS4_BYTE_35,
-    DS4_BYTE_36,
-    DS4_BYTE_37,
-    DS4_BYTE_38,
-    DS4_BYTE_39,
-    DS4_BYTE_40,
-    DS4_BYTE_41,
-    DS4_BYTE_42,
-    DS4_BYTE_43,
-    DS4_BYTE_44,
-    DS4_BYTE_45,
-    DS4_BYTE_46,
-    DS4_BYTE_47,
-    DS4_BYTE_48,
-    DS4_BYTE_49,
-    DS4_BYTE_50,
-    DS4_BYTE_51,
-    // TODO : Remaining bytes
-    DS4_BYTES = 64
-};
-
-struct Ds4Frame {
-    BYTE rawData[64];
-};
-
-enum EGkosKeyFlags {
-    GKOS_KEY_FLAG_1 = 1 << 0,
-    GKOS_KEY_FLAG_2 = 1 << 1,
-    GKOS_KEY_FLAG_3 = 1 << 2,
-    GKOS_KEY_FLAG_4 = 1 << 3,
-    GKOS_KEY_FLAG_5 = 1 << 4,
-    GKOS_KEY_FLAG_6 = 1 << 5,
-    GKOS_KEY_FLAG_COL_LEFT  = GKOS_KEY_FLAG_1 | GKOS_KEY_FLAG_2 | GKOS_KEY_FLAG_3,
-    GKOS_KEY_FLAG_COL_RIGHT = GKOS_KEY_FLAG_4 | GKOS_KEY_FLAG_5 | GKOS_KEY_FLAG_6,
-    GKOS_KEY_FLAG_ROW_TOP   = GKOS_KEY_FLAG_1 | GKOS_KEY_FLAG_4,
-    GKOS_KEY_FLAG_ROW_MID   = GKOS_KEY_FLAG_2 | GKOS_KEY_FLAG_5,
-    GKOS_KEY_FLAG_ROW_BOT   = GKOS_KEY_FLAG_3 | GKOS_KEY_FLAG_6,
-};
-
-struct GkosChord {
-    const TCHAR *  str;
-    unsigned short vkey;
-};
-
-enum EGkosChordFlags {
-    GKOS_CHORD_FLAG_NONE       = 0,
-    GKOS_CHORD_FLAG_SHIFT      = 1 << 0,
-    GKOS_CHORD_FLAG_SYMB       = 1 << 1,
-    GKOS_CHORD_FLAG_SHIFT_LOCK = 1 << 2,
-    GKOS_CHORD_FLAG_SYMB_LOCK  = 1 << 3,
-    //GKOS_CHORD_FLAG_ = 1 << 4,
-    //GKOS_CHORD_FLAG_ = 1 << 5,
-    //GKOS_CHORD_FLAG_ = 1 << 6,
-    //GKOS_CHORD_FLAG_ = 1 << 7,
-    GKOS_CHORD_FLAGS_MASK = 0x0F
-};
-
-struct GkosChordFrame {
-    BYTE     chordCode;
-    BYTE     flags;
-};
+#include "misc.h"
 
 // Timing
 static const unsigned s_ds4FrameDelay         = 4; // DS4 frame rate
-static const unsigned s_chordMinFrameCount    = 120 / s_ds4FrameDelay; // ms / ms-per-frame
+static const unsigned s_chordMinFrameCount    = 85 / s_ds4FrameDelay; // ms / ms-per-frame
 
 // Input frames
 static const unsigned s_inputBufferCount      = (MS_PER_SECOND * 3) / s_ds4FrameDelay;
 static unsigned       s_inputBufferIndex      = 0;
 static Ds4Frame       s_ds4FrameBuffer[s_inputBufferCount];
 static GkosChordFrame s_gkosFrameBuffer[s_inputBufferCount];
+
+// Windows stuff
+static HINSTANCE g_mainWindowHandle = NULL;
+
+namespace GkosDll {
+    typedef bool (*GkosKeyCheck) (unsigned gkosKeyNum);
+
+    static HMODULE      g_dllHandle                = NULL;
+    static GkosKeyCheck g_IsGkosKeyboardKeyPressed = NULL;
+} // namespace GkosDll
 
 // Higher-level key events
 //static const unsigned s_eventBufferCount      = 64; // Arbitrary number
@@ -283,8 +187,6 @@ void ListDevices () {
     }
     
     for (unsigned i = 0; i < numDevices; ++i) {
-        TCHAR           buf1[512];
-        UINT            buf1CharCount = sizeof(buf1)/sizeof(buf1[0]);
         RID_DEVICE_INFO devInfo;
         UINT            devInfoSize = sizeof(devInfo);
         memset(&devInfo, 0, sizeof(devInfo));
@@ -323,18 +225,39 @@ void ReadDs4RawInput (
     
     unsigned povValue = rawDataArray[DS4_BYTE_FACE_AND_POV] & 0x0F;
     unsigned gkosChord = 0x0;
+    /*
     if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 0)) // L1
         gkosChord |= GKOS_KEY_FLAG_1;
     if ((povValue >= 1 && povValue <= 3) || rawDataArray[DS4_BYTE_L2_ANALOG] >= 0x1F) // POV East OR L2
-        gkosChord |= (1 << 1);
+        gkosChord |= GKOS_KEY_FLAG_2;
     if (povValue >= 3 && povValue <= 5) // POV South
-        gkosChord |= (1 << 2);
+        gkosChord |= GKOS_KEY_FLAG_3;
     if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 1)) // R1
-        gkosChord |= (1 << 3);
+        gkosChord |= GKOS_KEY_FLAG_4;
     if ((rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 4)) || rawDataArray[DS4_BYTE_R2_ANALOG] >= 0x1F) // Square OR R2
-        gkosChord |= (1 << 4);
+        gkosChord |= GKOS_KEY_FLAG_5;
     if (rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 5)) // X
-        gkosChord |= (1 << 5);
+        gkosChord |= GKOS_KEY_FLAG_6;
+    /*/
+    //if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 0)) // L1
+        //gkosChord |= GKOS_KEY_FLAG_3;
+    if ((povValue >= 1 && povValue <= 3) || rawDataArray[DS4_BYTE_L2_ANALOG] >= 0x1F) // POV East OR L2
+        gkosChord |= GKOS_KEY_FLAG_1;
+    if (povValue >= 3 && povValue <= 5) // POV South
+        gkosChord |= GKOS_KEY_FLAG_2;
+    //if (rawDataArray[DS4_BYTE_L_R_MISC_DIGITAL] & (1 << 1)) // R1
+        //gkosChord |= GKOS_KEY_FLAG_6;
+    if ((rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 4)) || rawDataArray[DS4_BYTE_R2_ANALOG] >= 0x1F) // Square OR R2
+        gkosChord |= GKOS_KEY_FLAG_4;
+    if (rawDataArray[DS4_BYTE_FACE_AND_POV] & (1 << 5)) // X
+        gkosChord |= GKOS_KEY_FLAG_5;
+    //*/
+
+    // Combine with keyboard-based gkos keys
+    for (unsigned i = 1; i <= 6; ++i) {
+        if (GkosDll::g_IsGkosKeyboardKeyPressed(i))
+            gkosChord |= (1 << (i - 1));
+    }
         
     s_gkosFrameBuffer[s_inputBufferIndex].chordCode = gkosChord;
     s_gkosFrameBuffer[s_inputBufferIndex].flags     = 0;
@@ -403,13 +326,11 @@ LRESULT CALLBACK WndProc (
         case WM_PAINT: {
             hDC = BeginPaint(hwnd, &paint_struct);
             EndPaint(hwnd, &paint_struct);
-            return 0;
-        }
+        } return 0;
 
         case WM_DESTROY: {
             PostQuitMessage(0);
-            return 0;
-        }
+        } return 0;
 
         case WM_CHAR: {
             if (wParam == VK_ESCAPE) {
@@ -419,8 +340,7 @@ LRESULT CALLBACK WndProc (
             else if (wParam == 'l') {
                 ListDevices();
             }
-            break;
-        }
+        } break;
         
         case WM_INPUT: {
             static const UINT s_ds4Vendor  = 0x54C;
@@ -452,11 +372,44 @@ LRESULT CALLBACK WndProc (
             ReadDs4RawInput(raw->data.hid.dwCount, raw->data.hid.dwSizeHid, raw->data.hid.bRawData);
 
             delete[] lpb; 
-            return 0;
-        } 
+        } return 0;
     }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+}
+
+//============================================================================
+bool LoadGkosDll () {
+
+    GkosDll::g_dllHandle = LoadLibrary(L"GkosWinHooks.dll");
+    assert(GkosDll::g_dllHandle);
+    if (!GkosDll::g_dllHandle)
+        return false;
+
+    GkosDll::g_IsGkosKeyboardKeyPressed = (GkosDll::GkosKeyCheck)(
+        GetProcAddress(
+            GkosDll::g_dllHandle,
+            "IsGkosKeyboardKeyPressed"
+        )
+    );
+    assert(GkosDll::g_IsGkosKeyboardKeyPressed);
+    if (!GkosDll::g_IsGkosKeyboardKeyPressed) {
+        DWORD err = GetLastError();
+        return false;
+    }
+
+    return true;
+
+}
+
+//============================================================================
+BOOL UnloadGkosDll () {
+
+    if (GkosDll::g_dllHandle)
+        return FreeLibrary(GkosDll::g_dllHandle);
+
+    return true;
 
 }
 
@@ -471,6 +424,8 @@ int WINAPI wWinMain (
     memset(s_ds4FrameBuffer, 0, sizeof(s_ds4FrameBuffer));
     memset(s_gkosFrameBuffer, 0, sizeof(s_gkosFrameBuffer));
 
+    g_mainWindowHandle = instance;
+
     WNDCLASSEX windowClass    = {0};
     windowClass.cbSize        = sizeof(windowClass);
     windowClass.style         = CS_HREDRAW | CS_VREDRAW;
@@ -484,7 +439,7 @@ int WINAPI wWinMain (
     if (!RegisterClassEx(&windowClass))
         return 1;
 
-    RECT rc = {0, 0, 800, 600};
+    RECT rc = {0, 0, 320, 240};
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
     HWND hwnd = CreateWindowA("ps4gkos", "gkos Window", WS_OVERLAPPEDWINDOW,
@@ -510,6 +465,9 @@ int WINAPI wWinMain (
     //GameTimer timer;
     //timer.Reset();
 
+    if (!LoadGkosDll())
+        return 1;
+
     MSG msg = {0};
     while (msg.message != WM_QUIT)
     {
@@ -524,6 +482,8 @@ int WINAPI wWinMain (
             //demo->Render();
         }
     }
+
+    UnloadGkosDll();
 
     return static_cast<int>(msg.wParam);
 
